@@ -9,15 +9,17 @@ char *get_next_line(int fd)
 	 return(NULL);
   if(!group_word)
 	 group_word = readfile_and_get_to_group_word(&group_word,fd);
-  // answer = del_and_create_answer(&group_word);
+  answer = del_and_create_answer(&group_word);
   int i = 0;
+	printf("answer %s\n",answer);
   // free(answer);
-  while(group_word)
-  {
-    printf("group_word %d = %s\n",i++,group_word->content);
-    group_word = group_word->next;
-  }
-
+	// t_list *check = group_word;
+	// while(group_word)
+	// {
+	//   printf("%s\n",group_word->content);
+	//   group_word = group_word->next;
+	// }
+	// group_word = check;
   // ft_lstclear(&group_word, free);
   // answer = get_line(&group_word);
 	// if(group_word != NULL)
@@ -36,8 +38,10 @@ size_t size_before_newline(t_list **word)
   i_word = 0;
   i = 1;
   word_clone = *word ;
+	// printf("word clone = %s\n",word_clone->content);
   while(word_clone && i)
   {
+			printf("word clone = %s\n",word_clone->content);
     string = word_clone->content;
     while(*string != '\n' && *string)
     {
@@ -52,7 +56,7 @@ size_t size_before_newline(t_list **word)
   return (i_word);
 }
 
-char  *del_and_create_answer(t_list **group_word_main)
+char	*del_and_create_answer(t_list **group_word_main)
 {
   t_list *group_word;
   char *answer;
@@ -67,12 +71,12 @@ char  *del_and_create_answer(t_list **group_word_main)
   i = size_before_newline(&(*group_word_main));
   // printf("size word = %ld\n",i);
   answer = malloc(sizeof(char) * i + 1);
-  *group_word_main = push_group_word_main_to_answer(&answer,&(*group_word_main));
+  group_word_main = push_group_word_main_to_answer(&answer,&(*group_word_main));
   printf("%s\n",answer);
   return (answer);
 }
 
-static t_list *push_group_word_main_to_answer(char  **answer_main, t_list **group_word_main)
+static t_list **push_group_word_main_to_answer(char  **answer_main, t_list **group_word_main)
 {
   t_list  *group_word;
   t_list  *new_list;
@@ -83,35 +87,43 @@ static t_list *push_group_word_main_to_answer(char  **answer_main, t_list **grou
   i = 0;
   answer = *answer_main;
   group_word = *group_word_main;
+	new_list = NULL;
   while(group_word)
   {
     string = group_word->content;
     new_list = group_word->next;
+		// if (string[1] == '\n' || string[0] == '\n')
+		// 	printf("13 = %s\n",string);
     i = 0;
-    while(*string != '\n' && *(string + i))
+    while(*(string + i) != '\n' && *(string + i))
       *answer++ = *(string + i++);
-    if(*(string + i++) == '\n')
+    if(*(string + i) == '\n')
     {
       printf("string = %s\n",string);
-      new_list = ft_lstnew_get_next(string + i);
-      // printf("string = %s\n",new_list->content);
-      new_list->next = group_word->next;
-      t_list *check = new_list;
-      while(new_list)
-      {
-        printf("%s\n",new_list->content);
-        new_list = new_list->next;
-      }
-      new_list = check;
+			if(*(string + i + 1))
+		  {
+				printf("hello\n");
+      	new_list = ft_lstnew_get_next(string + i + 1);
+				new_list->next = group_word->next;
+			}
+    	// else
+      // 	new_list->next = group_word->next->next;
+      // t_list *check = new_list;
+      // while(new_list)
+      // {
+      //   printf("%s\n",new_list->content);
+      //   new_list = new_list->next;
+      // }
+      // new_list = check;
       ft_lstdelone(group_word,free);
-      group_word = new_list;
+      *group_word_main = new_list;
       *answer = '\0';
-      return (group_word);
+      return (group_word_main);
     }
     ft_lstdelone(group_word,free);
     group_word = new_list;
   }
-  free(group_word);
+  // free(group_word);
   return (0);
 }
 
@@ -121,7 +133,7 @@ t_list  *ft_lstnew_get_next(char  *s)
   t_list  *new_list;
 
   // printf("s = %s\n",s);
-  // printf("len s = %ld\n",ft_strlen_get(s));
+  printf("len s = %ld\n",ft_strlen_get(s));
   ptr = malloc(ft_strlen_get(s) + 1);
   ptr = ft_strcpy(ptr,s,ft_strlen_get(s));
   // printf("s = %s",ptr);
@@ -157,7 +169,7 @@ size_t  ft_strlen_get(char *s)
   // printf("s = %s\n",s);
   if(!s)
     return (0);
-  while(*s && *s != '\n')
+  while(*s)
   {
     i++;
     s++;
@@ -173,21 +185,30 @@ static t_list *readfile_and_get_to_group_word(t_list **group_word_main,int fd)
 
   group_word = *group_word_main;
   number_alpha_after_read = 1;
-  while(i <= 27)
+  while(number_alpha_after_read != 0)
   {
     buffer = ft_calloc(sizeof(char) * (BUFFER_SIZE + 1),1);
     number_alpha_after_read = read(fd, buffer, BUFFER_SIZE );
-    // buffer[number_alpha_after_read + 1] = '\0';
+    buffer[number_alpha_after_read + 1] = '\0';
     // printf("check buffer and readline\n");
     //bugs fuckkkkkkkkkkkkkkkkkkkkkkkkkkk
-    if(i == 27)
-      printf("buffer = %d | read = %d\n",buffer[2],number_alpha_after_read);
+		// if(buffer[1] == '\n' || buffer[0] == '\n')
+		// 	printf("buffer = %s\n",buffer);
+    // if(i == 27)
+      // printf("buffer char = %c | buffer = %d | read = %d\n",buffer[1],buffer[1],number_alpha_after_read);
     if(number_alpha_after_read)
       add_buffer_to_group_word(&group_word,buffer);
     else
       free(buffer);
-    i++;
   }
+	// t_list *check_group_word = group_word;
+	// // int i = 0;
+	// while(group_word)
+	// {
+	// 	printf("group_word %d = %s\n",i++,group_word->content);
+	// 	group_word = group_word->next;
+	// }
+	// group_word = check_group_word;
   return (group_word);
   // t_list *check_group_word = group_word;
   // int i = 0;
@@ -246,10 +267,14 @@ int main()
   ptr =get_next_line(fd);
     free(ptr);
   ptr =get_next_line(fd);
-    // free(ptr);
+    free(ptr);
   ptr =get_next_line(fd);
-    // free(ptr);
+    free(ptr);
   ptr = get_next_line(fd);
-    // free(ptr);
+    free(ptr);
+	ptr = get_next_line(fd);
+	  free(ptr);
+	ptr = get_next_line(fd);
+		free(ptr);
   close(fd);
 }
