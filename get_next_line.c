@@ -10,7 +10,7 @@ char *get_next_line(int fd)
   if(!group_word)
 	 group_word = readfile_and_get_to_group_word(&group_word,fd);
   answer = del_and_create_answer(&group_word);
-  int i = 0;
+  // int i = 0;
 	printf("answer %s\n",answer);
   // free(answer);
 	// t_list *check = group_word;
@@ -35,25 +35,25 @@ size_t size_before_newline(t_list **word)
   size_t  i_word;
   t_list  *word_clone;
   char  *string;
+
   i_word = 0;
   i = 1;
   word_clone = *word ;
 	// printf("word clone = %s\n",word_clone->content);
   while(word_clone && i)
   {
-			printf("word clone = %s\n",word_clone->content);
+			// printf("word clone = %s\n",word_clone->content);
     string = word_clone->content;
     while(*string != '\n' && *string)
     {
+			string++;
       i_word++;
-      *string++;
     }
     if(*string == '\n')
       i = 0;
     word_clone = word_clone->next;
   }
-  i_word--;
-  return (i_word);
+  return (i_word--);
 }
 
 char	*del_and_create_answer(t_list **group_word_main)
@@ -62,17 +62,19 @@ char	*del_and_create_answer(t_list **group_word_main)
   char *answer;
   size_t i;
 
+	// i = 0;
   group_word = *group_word_main;
   if(!group_word)
   {
-    printf("Hello\n");
+    // printf("Hello\n");
     return (NULL);
   }
   i = size_before_newline(&(*group_word_main));
-  // printf("size word = %ld\n",i);
+  printf("size word = %ld\n",i);
   answer = malloc(sizeof(char) * i + 1);
+	// answer[i - 1] = '\0';
   group_word_main = push_group_word_main_to_answer(&answer,&(*group_word_main));
-  printf("%s\n",answer);
+  // printf("%s\n",answer);
   return (answer);
 }
 
@@ -84,8 +86,10 @@ static t_list **push_group_word_main_to_answer(char  **answer_main, t_list **gro
   char  *string;
   size_t  i;
 
+	int	check = 0;
   i = 0;
   answer = *answer_main;
+	// printf("answer %s\n",answer);
   group_word = *group_word_main;
 	new_list = NULL;
   while(group_word)
@@ -99,10 +103,10 @@ static t_list **push_group_word_main_to_answer(char  **answer_main, t_list **gro
       *answer++ = *(string + i++);
     if(*(string + i) == '\n')
     {
-      printf("string = %s\n",string);
+      // printf("string = %d\n",check);
 			if(*(string + i + 1))
 		  {
-				printf("hello\n");
+				// printf("hello\n");
       	new_list = ft_lstnew_get_next(string + i + 1);
 				new_list->next = group_word->next;
 			}
@@ -133,8 +137,9 @@ t_list  *ft_lstnew_get_next(char  *s)
   t_list  *new_list;
 
   // printf("s = %s\n",s);
-  printf("len s = %ld\n",ft_strlen_get(s));
+  // printf("len s = %ld\n",ft_strlen_get(s));
   ptr = malloc(ft_strlen_get(s) + 1);
+	// ptr[ft_strlen_get(s) + 1] = '\0';
   ptr = ft_strcpy(ptr,s,ft_strlen_get(s));
   // printf("s = %s",ptr);
   new_list = malloc(sizeof(t_list));
@@ -180,16 +185,16 @@ static t_list *readfile_and_get_to_group_word(t_list **group_word_main,int fd)
 {
   char *buffer;
   int number_alpha_after_read;
-  t_list  *group_word;
-  int i = 0;
+  // t_list  *group_word;
+  // int i = 0;
 
-  group_word = *group_word_main;
+  // group_word = *group_word_main;
   number_alpha_after_read = 1;
   while(number_alpha_after_read != 0)
   {
     buffer = ft_calloc(sizeof(char) * (BUFFER_SIZE + 1),1);
     number_alpha_after_read = read(fd, buffer, BUFFER_SIZE );
-    buffer[number_alpha_after_read + 1] = '\0';
+    buffer[number_alpha_after_read] = '\0';
     // printf("check buffer and readline\n");
     //bugs fuckkkkkkkkkkkkkkkkkkkkkkkkkkk
 		// if(buffer[1] == '\n' || buffer[0] == '\n')
@@ -197,7 +202,7 @@ static t_list *readfile_and_get_to_group_word(t_list **group_word_main,int fd)
     // if(i == 27)
       // printf("buffer char = %c | buffer = %d | read = %d\n",buffer[1],buffer[1],number_alpha_after_read);
     if(number_alpha_after_read)
-      add_buffer_to_group_word(&group_word,buffer);
+      add_buffer_to_group_word(&(*group_word_main),buffer);
     else
       free(buffer);
   }
@@ -209,7 +214,7 @@ static t_list *readfile_and_get_to_group_word(t_list **group_word_main,int fd)
 	// 	group_word = group_word->next;
 	// }
 	// group_word = check_group_word;
-  return (group_word);
+  return (*group_word_main);
   // t_list *check_group_word = group_word;
   // int i = 0;
   // while(group_word)

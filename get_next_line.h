@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include "Libft/libft.h"
 
-#define BUFFER_SIZE 2
-
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 2
+#endif
 static t_list *readfile_and_get_to_group_word(t_list **group_word_main,int fd);
 
 void  add_buffer_to_group_word(t_list **group_word_main,char *buffer);
