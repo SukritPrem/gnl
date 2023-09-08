@@ -1,285 +1,198 @@
-#include "get_next_line.h"
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
 
-char *get_next_line(int fd)
+#define BUFFER 2
+
+char	*ft_strchr(const char *s, int c);
+
+char	*ft_strjoin(char const *s1, char const *s2);
+
+char	*ft_strdup(const char *s);
+
+typedef struct s_list
 {
-	char *answer;
-	static t_list *group_word;
+  char  *last_word;
+  char  *current_word;
+} t_list;
 
-	if(fd < 0)
-	 return(NULL);
-  if(!group_word)
-	 group_word = readfile_and_get_to_group_word(&group_word,fd);
-  answer = del_and_create_answer(&group_word);
-  // int i = 0;
-	printf("answer %s\n",answer);
-  // free(answer);
-	// t_list *check = group_word;
-	// while(group_word)
-	// {
-	//   printf("%s\n",group_word->content);
-	//   group_word = group_word->next;
-	// }
-	// group_word = check;
-  // ft_lstclear(&group_word, free);
-  // answer = get_line(&group_word);
-	// if(group_word != NULL)
-  // 	delete_before_newline(&group_word);
+char  *get_next_line(int fd);
 
-	// close(fd);
-	return(answer);
-}
-
-size_t size_before_newline(t_list **word)
+size_t	ft_strlen(const char *s)
 {
-  size_t  i;
-  size_t  i_word;
-  t_list  *word_clone;
-  char  *string;
+	int	num_size;
 
-  i_word = 0;
-  i = 1;
-  word_clone = *word ;
-	// printf("word clone = %s\n",word_clone->content);
-  while(word_clone && i)
-  {
-			// printf("word clone = %s\n",word_clone->content);
-    string = word_clone->content;
-    while(*string != '\n' && *string)
-    {
-			string++;
-      i_word++;
-    }
-    if(*string == '\n')
-      i = 0;
-    word_clone = word_clone->next;
-  }
-  return (i_word--);
+	num_size = 0;
+	while (s[num_size] != '\0')
+		num_size++;
+	return (num_size);
 }
-
-char	*del_and_create_answer(t_list **group_word_main)
-{
-  t_list *group_word;
-  char *answer;
-  size_t i;
-
-	// i = 0;
-  group_word = *group_word_main;
-  if(!group_word)
-  {
-    // printf("Hello\n");
-    return (NULL);
-  }
-  i = size_before_newline(&(*group_word_main));
-  printf("size word = %ld\n",i);
-  answer = malloc(sizeof(char) * i + 1);
-	// answer[i - 1] = '\0';
-  group_word_main = push_group_word_main_to_answer(&answer,&(*group_word_main));
-  // printf("%s\n",answer);
-  return (answer);
-}
-
-static t_list **push_group_word_main_to_answer(char  **answer_main, t_list **group_word_main)
-{
-  t_list  *group_word;
-  t_list  *new_list;
-  char  *answer;
-  char  *string;
-  size_t  i;
-
-	int	check = 0;
-  i = 0;
-  answer = *answer_main;
-	// printf("answer %s\n",answer);
-  group_word = *group_word_main;
-	new_list = NULL;
-  while(group_word)
-  {
-    string = group_word->content;
-    new_list = group_word->next;
-		// if (string[1] == '\n' || string[0] == '\n')
-		// 	printf("13 = %s\n",string);
-    i = 0;
-    while(*(string + i) != '\n' && *(string + i))
-      *answer++ = *(string + i++);
-    if(*(string + i) == '\n')
-    {
-      // printf("string = %d\n",check);
-			if(*(string + i + 1))
-		  {
-				// printf("hello\n");
-      	new_list = ft_lstnew_get_next(string + i + 1);
-				new_list->next = group_word->next;
-			}
-    	// else
-      // 	new_list->next = group_word->next->next;
-      // t_list *check = new_list;
-      // while(new_list)
-      // {
-      //   printf("%s\n",new_list->content);
-      //   new_list = new_list->next;
-      // }
-      // new_list = check;
-      ft_lstdelone(group_word,free);
-      *group_word_main = new_list;
-      *answer = '\0';
-      return (group_word_main);
-    }
-    ft_lstdelone(group_word,free);
-    group_word = new_list;
-  }
-  // free(group_word);
-  return (0);
-}
-
-t_list  *ft_lstnew_get_next(char  *s)
-{
-  char  *ptr;
-  t_list  *new_list;
-
-  // printf("s = %s\n",s);
-  // printf("len s = %ld\n",ft_strlen_get(s));
-  ptr = malloc(ft_strlen_get(s) + 1);
-	// ptr[ft_strlen_get(s) + 1] = '\0';
-  ptr = ft_strcpy(ptr,s,ft_strlen_get(s));
-  // printf("s = %s",ptr);
-  new_list = malloc(sizeof(t_list));
-  new_list -> content = ptr;
-  new_list -> next = NULL;
-  return(new_list);
-}
-
-void	*ft_strcpy(void *dest, const void *src, size_t n)
-{
-	unsigned char		*d;
-	const unsigned char	*s;
-
-	d = dest;
-	s = src;
-	if (!dest && !src)
-		return (NULL);
-	while (n)
-	{
-		*d++ = *s++;
-		n--;
-	}
-  *d = '\0';
-	return (dest);
-}
-
-size_t  ft_strlen_get(char *s)
-{
-  size_t  i;
-
-  i = 0;
-  // printf("s = %s\n",s);
-  if(!s)
-    return (0);
-  while(*s)
-  {
-    i++;
-    s++;
-  }
-  return (i);
-}
-static t_list *readfile_and_get_to_group_word(t_list **group_word_main,int fd)
-{
-  char *buffer;
-  int number_alpha_after_read;
-  // t_list  *group_word;
-  // int i = 0;
-
-  // group_word = *group_word_main;
-  number_alpha_after_read = 1;
-  while(number_alpha_after_read != 0)
-  {
-    buffer = ft_calloc(sizeof(char) * (BUFFER_SIZE + 1),1);
-    number_alpha_after_read = read(fd, buffer, BUFFER_SIZE );
-    buffer[number_alpha_after_read] = '\0';
-    // printf("check buffer and readline\n");
-    //bugs fuckkkkkkkkkkkkkkkkkkkkkkkkkkk
-		// if(buffer[1] == '\n' || buffer[0] == '\n')
-		// 	printf("buffer = %s\n",buffer);
-    // if(i == 27)
-      // printf("buffer char = %c | buffer = %d | read = %d\n",buffer[1],buffer[1],number_alpha_after_read);
-    if(number_alpha_after_read)
-      add_buffer_to_group_word(&(*group_word_main),buffer);
-    else
-      free(buffer);
-  }
-	// t_list *check_group_word = group_word;
-	// // int i = 0;
-	// while(group_word)
-	// {
-	// 	printf("group_word %d = %s\n",i++,group_word->content);
-	// 	group_word = group_word->next;
-	// }
-	// group_word = check_group_word;
-  return (*group_word_main);
-  // t_list *check_group_word = group_word;
-  // int i = 0;
-  // while(group_word)
-  // {
-  //   printf("group_word %d = %s\n",i++,group_word->content);
-  //   group_word = group_word->next;
-  // }
-  // group_word = check_group_word;
-  // i = 0;
-  // ft_lstclear(&group_word, free);
-  // free(group_word);
-}
-
-void  add_buffer_to_group_word(t_list **group_word_main,char *buffer)
-{
-  t_list  *group_word;
-  t_list  *tmp;
-
-  group_word = *group_word_main;
-  if(!group_word)
-  {
-    tmp = ft_lstnew(buffer);
-    *group_word_main = tmp;
-  }
-  else
-  {
-    tmp = ft_lstnew(buffer);
-    ft_lstadd_back(&(*group_word_main),tmp);
-  }
-}
-
-// void	ft_lstadd_back(t_list **lst, t_list *new)
-// {
-// 	t_list	*tmp;
-//
-// 	if (!lst && !new)
-// 		return ;
-// 	if (!*lst)
-// 	{
-// 		*lst = new;
-// 		return ;
-// 	}
-// 	tmp = ft_lstlast(*lst);
-// 	tmp->next = new;
-// }
 
 int main()
 {
   int fd;
-
-  fd = open("test.txt",O_RDONLY);
-  // printf("fd = %d\n",fd);
-  char *ptr = get_next_line(fd);
+  char  *ptr;
+  fd = open("test", O_RDONLY);
+  // char  ptry[] = "Hello";
+  // printf("%s\n",ptry);
+  // printf("%s\n",ptry+2);
+  ptr = get_next_line(fd);
+  printf("%s",ptr);
   free(ptr);
   ptr =get_next_line(fd);
-    free(ptr);
-  ptr =get_next_line(fd);
-    free(ptr);
-  ptr =get_next_line(fd);
-    free(ptr);
-  ptr = get_next_line(fd);
-    free(ptr);
-	ptr = get_next_line(fd);
-	  free(ptr);
-	ptr = get_next_line(fd);
-		free(ptr);
-  close(fd);
+  printf("%s",ptr);
+  free(ptr);
+  // ptr = get_next_line(fd);
+  // free(ptr);
+
+  // ptr = ft_strjoin(""," World\n");
+  // printf("%s\n",ptr);
+  // free(ptr);
+  // get_next_line(fd);
+}
+
+
+char  *get_next_line(int fd)
+{
+  static t_list *group_word;
+  char  *tmp_group_word;
+  static int i;
+
+  // printf("i ====================> %d\n",i++);
+  // if(!group_word)
+  // {
+
+  //   group_word = malloc(sizeof(t_list));
+  //   group_word->current_word = ft_strdup("");
+  // }
+  char *line;
+  char *buffer;
+  int number_read;
+  number_read = 1;
+  while(number_read != 0)
+  {
+        buffer = malloc(sizeof(char) * (BUFFER + 1));
+        number_read = read(fd,  buffer, BUFFER);
+        if(number_read == 0)
+        {
+          break;
+        }
+        buffer[BUFFER + 1] = '\0';
+
+        if(!group_word)
+        {
+          group_word = malloc(sizeof(t_list));
+          group_word->current_word = ft_strdup("");
+        }
+        if(group_word->last_word)
+        {
+            group_word->current_word = ft_strdup("");
+            group_word->current_word = ft_strjoin(group_word->current_word,group_word->last_word);
+            printf("ggg = %s\n",group_word->current_word);
+            free(tmp_group_word);
+        }
+        group_word->last_word = ft_strchr(buffer,'\n');
+        tmp_group_word = group_word->current_word;
+        group_word->current_word = ft_strjoin(tmp_group_word,buffer);
+        free(tmp_group_word);
+        if(group_word->last_word)
+        {
+          tmp_group_word = group_word->current_word;
+          group_word->current_word = ft_strjoin(tmp_group_word,group_word->last_word);
+          free(tmp_group_word);
+          return(group_word->current_word);
+          break;
+        }
+        free(buffer);
+  }
+  if(number_read == 0)
+  {
+      // group_word->last_word = ft_strchr(buffer,'\n');
+      if(group_word)
+        return(group_word->current_word);
+    // printf("%s\n",group_word->current_word);
+    // free(group_word->current_word);
+    // free(group_word->last_word);
+    free(group_word);
+    return(NULL);
+  }
+  // }
+}
+
+char	*ft_strchr(const char *s, int c)
+{
+	int			i;
+	const char	*ptr;
+
+	ptr = s;
+	i = 0;
+	c = (unsigned char)c;
+	while (*(s + i))
+	{
+		if (*(s + i) == c)
+			return ((char *)(ptr + i));
+		i++;
+	}
+	if ((size_t)i == ft_strlen(s) && c == 0)
+		return ((char *)(ptr + i));
+	return (0);
+}
+
+int	put_s1_s2_to_ptr(char **ptr, char const *s1, char const *s2)
+{
+	size_t	i;
+	int		j;
+
+	i = 0;
+	j = 0;
+	while (i < ft_strlen(s1))
+  {
+    // printf("check\n");
+		(*ptr)[j++] = s1[i++];
+  }
+	i = 0;
+	while (i < ft_strlen(s2))
+		(*ptr)[j++] = s2[i++];
+	return (j);
+}
+
+char	*ft_strjoin(char const *s1, char const *s2)
+{
+	int		sum_len;
+	char	*ptr;
+	int		i;
+
+	i = 0;
+	if (!s2)
+		return (NULL);
+	if (!*s1 && !*s2)
+		return (ft_strdup(""));
+	sum_len = ft_strlen(s1) + ft_strlen(s2);
+	if (sum_len == 0)
+		return ((char *)0);
+	ptr = malloc(sum_len + 1);
+	if (!ptr)
+		return (ptr);
+	i = put_s1_s2_to_ptr(&ptr, s1, s2);
+	ptr[i] = '\0';
+	return (ptr);
+}
+
+char	*ft_strdup(const char *s)
+{
+	char	*ptr;
+	int		i;
+
+	i = 0;
+	ptr = malloc(ft_strlen(s) + 1);
+	if (!ptr)
+		return (NULL);
+	while (*(s + i))
+	{
+		ptr[i] = *(s + i);
+		i++;
+	}
+	ptr[i] = '\0';
+	return (ptr);
 }
